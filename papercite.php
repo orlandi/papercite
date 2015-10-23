@@ -682,7 +682,6 @@ class Papercite {
      * @options The options of the command
      */
     function processCommand($command, $options) {
-		//print_r($options);
         global $wpdb, $papercite_table_name;
 
     // --- Process the commands ---
@@ -716,7 +715,6 @@ class Papercite {
             $refs[$key] = &$entry;
           }
       }
-	  
 
       $this->bibshow_tpl_options[] = $this->getBib2TplOptions($options);
       $this->bibshow_options[] = $options;
@@ -788,7 +786,6 @@ class Papercite {
   /** Get entries fullfilling a condition (bibtex & bibfilter) */
   function getEntries($options) {
       global $wpdb, $papercite_table_name;
-	  //print_r($options);
       // --- Filter the data
       $entries = $this->getData($options["file"], $options);
       if ($entries === FALSE) {
@@ -815,8 +812,7 @@ class Papercite {
         $allow = $allow ? preg_split("-,-",$allow) : Array();
         $deny =  $deny ? preg_split("-,-", $deny) : Array();
 		
-  		  $getYear = Papercite::array_get($options, "year", "");
-        //print($getYear); //return;
+        $getYear = Papercite::array_get($options, "year", "");
         
         $author_matcher = new PaperciteAuthorMatcher(Papercite::array_get($options, "author", ""));
 		
@@ -844,25 +840,21 @@ class Papercite {
               // Handles year and entry type by direct SQL
               foreach($allow as &$v) $v = '"' . $wpdb->escape($v) . '"';
               $allowCond = $allow ? "and entrytype in (" . implode(",",$allow) . ")" : "";
-			  
               foreach($deny as &$v) $v = '"' . $wpdb->escape($v) . '"';
               $denyCond = $deny ? "and entrytype not in (" . implode(",",$deny) . ")" : "";
-			  
-			  $getYearCond = $getYear ? "and year = " . $getYear . "" : "";
+              $getYearCond = $getYear ? "and year = " . $getYear . "" : "";
       
               // Retrieve and filter further
               $st = "SELECT data FROM $papercite_table_name WHERE $dbCond $denyCond $allowCond $getYearCond";
-			  //print($st); 
-	      	  $rows = $wpdb->get_col($st);
+              $rows = $wpdb->get_col($st);
               if ($rows) foreach($rows as $data) {
                   $entry = maybe_unserialize($data);
-				  //print_r($entry);
                   if ($author_matcher->matches($entry) && $keyword_matcher->matches($entry) && Papercite::userFiltersMatch($options["filters"], $entry))
                       $result[] = $entry;
               }
           }
       }
-      
+       
       return $result;
   }
 
@@ -944,7 +936,7 @@ class Papercite {
    * @param options The options to pass to bib2tpl
    * @param getKeys Keep track of the keys for a final substitution
    */
-  function showEntries($refs, $goptions, $options, $getKeys, $mainTpl, $formatTpl, $mode) {	
+  function showEntries($refs, $goptions, $options, $getKeys, $mainTpl, $formatTpl, $mode) {
     // Get the template files
     $main = $this->getContent("$mainTpl", "tpl", "tpl", "MIMETYPE", $goptions, true);
     $format = $this->getContent("$formatTpl", "tpl", "format", "MIMETYPE", $goptions, true);
@@ -984,7 +976,6 @@ class Papercite {
     }
 
     // This will set the key of each reference
-
     $r = $bib2tpl->display($refs);
 
     // If we need to get the citation key back
@@ -999,12 +990,6 @@ class Papercite {
           }
         }
       }
-      foreach($refs as &$group){
-		  foreach($group as &$ref) {
-			$this->keys[] = $ref["pKey"];
-			$this->keyValues[] = $ref["key"];
-		  }
-	  }
     }
 
 
@@ -1021,35 +1006,34 @@ class Papercite {
      * @return multitype:string The output of the bibfilter shortcode
      */
     function bibfilter($options){
-      // create form with custom types and authors	
+      // create form with custom types and authors
         global $post;
         
         $selected_author = false;
         $selected_type = false;
-		$selected_year = false;
-		$selected_keyword = false;
+        $selected_year = false;
+        $selected_keyword = false;
         
         $original_authors = Papercite::array_get($options, "author", "");
         $original_allow = Papercite::array_get($options, "allow", "");
-		$original_year = Papercite::array_get($options, "year", "");
-		$original_keyword = Papercite::array_get($options, "keyword", "");	
-	
+        $original_year = Papercite::array_get($options, "year", "");
+        $original_keyword = Papercite::array_get($options, "keyword", "");	
         
         if (isset($_POST) && (papercite::array_get($_POST, "papercite_post_id", 0) == $post->ID)) {
         if (isset($_POST["papercite_author"]) && !empty($_POST["papercite_author"])) 
                 $selected_author = ($options["author"] = $_POST["papercite_author"]);        
             
         if (isset($_POST["papercite_allow"]) && !empty($_POST["papercite_allow"])) 
-                $selected_type = ($options["allow"] = $_POST["papercite_allow"]);     
+                $selected_type = ($options["allow"] = $_POST["papercite_allow"]);
         
-		if (isset($_POST["papercite_year"]) && !empty($_POST["papercite_year"])) 
+        if (isset($_POST["papercite_year"]) && !empty($_POST["papercite_year"])) 
                 $selected_year = ($options["year"] = $_POST["papercite_year"]);  
 		
-		if (isset($_POST["papercite_keywords"]) && !empty($_POST["papercite_keywords"])) 
+        if (isset($_POST["papercite_keywords"]) && !empty($_POST["papercite_keywords"])) 
                 $selected_keyword = ($options["keyword"] = $_POST["papercite_keywords"]); 		
 		      
         }
-		
+        
         $result = $this->getEntries($options);
         ob_start();
         ?>
@@ -1061,23 +1045,20 @@ class Papercite {
               <td><select name="papercite_author" id="papercite_author">
                   <option value="">ALL</option>
                             <?php
-							//$original_authors = "Nguyen|Delmas|Gong|Gimel'farb";
                             $authors = preg_split("#\s*\\|\s*#", $original_authors);
                             if (Papercite::array_get($options, "sortauthors", 0))
                                 sort($authors);
                             
                             foreach($authors as $author) {
                                 print "<option value=\"".htmlentities($author, ENT_QUOTES, "UTF-8")."\"";
-
-								//print addslashes($selected_author)." == $author";
-                                if ($selected_author == addslashes($author))
+                                if ($selected_author == $author)
+//                                if ($selected_author == addslashes($author))
                                     print " selected=\"selected\"";
                                 print ">$author</option>";
                             }
                             ?>
               </select></td>
-           </tr>         
-           <tr>
+                    
               <td>Type:</td>
               <td><select name="papercite_allow" id="papercite_type">
                   <option value="">ALL</option>
@@ -1085,7 +1066,6 @@ class Papercite {
                             $types = preg_split("#\s*,\s*#", $original_allow);
                             foreach($types as $type) {
                                 print "<option value=\"".htmlentities($type, ENT_QUOTES, "UTF-8")."\"";
-
                                 if ($selected_type == $type)
                                     print " selected=\"selected\"";
                                 print ">" . papercite_bibtype2string($type) . "</option>";
@@ -1122,7 +1102,7 @@ class Papercite {
         </form>
         
         <?php
-        //print_r($options);
+        
         return ob_get_clean() . $this->showEntries($result, $options, $this->getBib2TplOptions($options), false, $options["bibtex_template"], $options["format"], "bibtex");
     }
 
