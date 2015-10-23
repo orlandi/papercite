@@ -93,35 +93,39 @@ class PaperciteKeywordMatcher {
       function __construct($keywords){		 
           // Each element of this array is alternative match
       $this->filters = Array();
-
+      //var_dump($keywords);
+      //echo $keywords "<br>";
         if (!isset($keywords) || empty($keywords)){
         } else if(!is_string($keywords)){
           echo "Warning: cannot parse option \"keywords\", this is specified by string!<br>";// probably useless..         
         } else {
             require_once(dirname(__FILE__) . "/lib/bibtex_common.php");
             foreach(preg_split("-\\;-", $keywords) as $conjonction) {				
-				$this->keywordFind = $conjonction;
+//            foreach(explode(",", $keywords) as $conjonction) {       
+      				$this->keywordFind = $conjonction;
             }
         }
       }
       
       function matches(&$entry) {
-          $ok = true;
-          $eKeywords = &$entry["keywords"];
+        $ok = false;
+        $eKeywords = &$entry["keywords"];
+
+        // If I'm not looking for any keyword return true
+		    if(!isset($this->keywordFind)){
+          return true;
+        }
 		  
-		  $allKeywordFind = explode(",", $this->keywordFind);
-		  if(sizeof($allKeywordFind) > 1) return true;
-		  
-		  foreach(explode(",", $this->keywordFind) as $keywordFind) {			  
-			  foreach(preg_split("-\\;-", $eKeywords) as $keywords) {
-				  $ok = false;				  
+        // If any keyword of the entry matches with any keyword I am looking for
+        // return true
+		    foreach(array_map('trim', explode(",", $this->keywordFind)) as $keywordFind) {			  
+			   foreach(array_map('trim', explode(",", $eKeywords)) as $keywords) {
 				  if(strtolower($keywords) === strtolower($keywordFind)){
-						$ok = true;
-						break;
+            return true;
 				  }
-			  }			  
-		  }		  
-          return $ok;
+			   }			  
+		    }		  
+        return $ok;
       }
 }
 
@@ -828,7 +832,7 @@ class Papercite {
             else
               foreach($outer as &$entry) {
                 $t = &$entry["entrytype"];
-                if ((sizeof($allow)==0 || in_array($t, $allow)) && (sizeof($deny)==0 || !in_array($t, $deny)) && $author_matcher->matches($entry) && Papercite::userFiltersMatch($options["filters"], $entry)) {
+                if ((sizeof($allow)==0 || in_array($t, $allow)) && (sizeof($deny)==0 || !in_array($t, $deny)) && $author_matcher->matches($entry) && $keyword_matcher->matches($entry) && Papercite::userFiltersMatch($options["filters"], $entry)) {
                 $result[] = $entry;
                 }
               }
