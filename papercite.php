@@ -50,7 +50,7 @@ include("papercite_options.php");
    */
   class PaperciteAuthorMatcher {
       function __construct($authors){
-	  // Each element of this array is alternative match
+          // Each element of this array is alternative match
       $this->filters = Array();
 
         if (!isset($authors) || empty($authors)){
@@ -71,8 +71,8 @@ include("papercite_options.php");
           foreach($this->filters as &$filter) {
               foreach($filter->creators as $author) {
                   $ok = false;
-                  foreach($eAuthors->creators as $eAuthor) {					 
-                      if (($author["surname"]) === $eAuthor["surname"]) {
+                  foreach($eAuthors->creators as $eAuthor) {
+                      if ($author["surname"] === $eAuthor["surname"]) {
                           $ok = true;
                           break;
                       }
@@ -161,13 +161,8 @@ class Papercite {
   function getCached($url, $timeout = 3600, $sslverify = false) {
     // check if cached file exists
     $name = strtolower(preg_replace("@[/:]@","_",$url));
-<<<<<<< HEAD
     $dir_path = self::getCacheDirectory( 'path' );
     $file = "$dir_path/$name.bib";
-=======
-    $dir = WP_PLUGIN_DIR . "/papercite/cache";
-    $file = "$dir/$name.bib";
->>>>>>> filtering
 
     // check if file date exceeds 60 minutes   
     if (! (file_exists($file) && (filemtime($file) + $timeout > time())))  {
@@ -205,15 +200,10 @@ class Papercite {
         return false;
       }
     }
-<<<<<<< HEAD
 
     $dir_url = self::getCacheDirectory( 'url' );
 
     return array($file, $dir_url . '/' . $name);
-=======
-  
-    return array($file, WP_PLUGIN_URL."/papercite/cache/$name");
->>>>>>> filtering
   }
 
   static $bibtex_parsers = array("pear" => "Pear parser", "osbib" => "OSBiB parser");
@@ -291,6 +281,7 @@ class Papercite {
 
   
   static function getCustomDataDirectory() {
+    global $wpdb;
     $url = WP_CONTENT_URL;
     if (is_multisite()) {
       $subpath = '/blogs.dir/'. $wpdb->blogid . "/files";
@@ -824,12 +815,12 @@ class Papercite {
         $allow = $allow ? preg_split("-,-",$allow) : Array();
         $deny =  $deny ? preg_split("-,-", $deny) : Array();
 		
-		$getYear = Papercite::array_get($options, "year", "");
-		//print($getYear); //return;
+  		  $getYear = Papercite::array_get($options, "year", "");
+        //print($getYear); //return;
         
         $author_matcher = new PaperciteAuthorMatcher(Papercite::array_get($options, "author", ""));
 		
-		$keyword_matcher = new PaperciteKeywordMatcher(Papercite::array_get($options, "keyword", ""));
+        $keyword_matcher = new PaperciteKeywordMatcher(Papercite::array_get($options, "keyword", ""));
 
         $result = array();
         $dbs = array();
@@ -955,15 +946,8 @@ class Papercite {
    */
   function showEntries($refs, $goptions, $options, $getKeys, $mainTpl, $formatTpl, $mode) {	
     // Get the template files
-<<<<<<< HEAD
     $main = $this->getContent("$mainTpl", "tpl", "tpl", "MIMETYPE", $goptions, true);
     $format = $this->getContent("$formatTpl", "tpl", "format", "MIMETYPE", $goptions, true);
-=======
-    $mainFile = $this->getDataFile("$mainTpl", "tpl", "tpl", "MIMETYPE", $goptions, true);
-    $formatFile = $this->getDataFile("$formatTpl", "tpl", "format", "MIMETYPE", $goptions, true);
-	
-	
->>>>>>> filtering
 
     // Fallback to defaults if needed
     if (!$main) {
@@ -999,17 +983,12 @@ class Papercite {
       $this->checkFiles($ref, $goptions);
     }
 
-<<<<<<< HEAD
     // This will set the key of each reference
-=======
 
-	
->>>>>>> filtering
     $r = $bib2tpl->display($refs);
 
     // If we need to get the citation key back
     if ($getKeys) {
-<<<<<<< HEAD
       foreach($refs as &$group) {
         foreach($group as &$ref) {
           $this->keys[] = $ref["pKey"];
@@ -1020,14 +999,12 @@ class Papercite {
           }
         }
       }
-=======
       foreach($refs as &$group){
 		  foreach($group as &$ref) {
 			$this->keys[] = $ref["pKey"];
 			$this->keyValues[] = $ref["key"];
 		  }
 	  }
->>>>>>> filtering
     }
 
 
@@ -1076,7 +1053,7 @@ class Papercite {
         $result = $this->getEntries($options);
         ob_start();
         ?>
-        <form method="post">
+        <form method="post" accept-charset="UTF-8">
             <input type="hidden" name="papercite_post_id" value="<?php echo $post->ID?>">
           <table style="border-top: solid 1px #eee; border-bottom: solid 1px #eee; width: 100%">
             <tr>
@@ -1090,7 +1067,8 @@ class Papercite {
                                 sort($authors);
                             
                             foreach($authors as $author) {
-                                print "<option value=\"".htmlentities($author)."\"";
+                                print "<option value=\"".htmlentities($author, ENT_QUOTES, "UTF-8")."\"";
+
 								//print addslashes($selected_author)." == $author";
                                 if ($selected_author == addslashes($author))
                                     print " selected=\"selected\"";
@@ -1106,7 +1084,8 @@ class Papercite {
                             <?php
                             $types = preg_split("#\s*,\s*#", $original_allow);
                             foreach($types as $type) {
-                                print "<option value=\"".htmlentities($type)."\"";
+                                print "<option value=\"".htmlentities($type, ENT_QUOTES, "UTF-8")."\"";
+
                                 if ($selected_type == $type)
                                     print " selected=\"selected\"";
                                 print ">" . papercite_bibtype2string($type) . "</option>";
